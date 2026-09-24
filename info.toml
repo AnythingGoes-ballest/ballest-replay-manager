@@ -1,0 +1,10 @@
+[meta]
+name = "Replay Manager"
+version = "0.1.0"
+author = "AnythingGoes"
+description = "Pause, speed (.1x to 5x), scrubbing with the real replay length, and default / follow 3D / free cameras."
+min_host = "0.3.0"
+
+[script]
+files = ["main.as"]
+timeout = 50

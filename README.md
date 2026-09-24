@@ -17,7 +17,7 @@ controls for watching replays in Ballest of Them All.
 
 ## Install
 
-In the game: footer **plugins** > **open** > **plugins** > Replay Manager > **install**. Needs the plugin manager
+In the game: footer **plugins** > **open** > **browse** > Replay Manager > **install**. Needs the plugin manager
 host 0.3.0 or newer.
 
 ## How it works

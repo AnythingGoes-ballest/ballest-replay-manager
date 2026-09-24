@@ -1,6 +1,7 @@
 // Replay Manager: controls along the bottom of the screen while watching a replay.
 //
 //   [pause]  ====o=================  0:12.345 / 0:45.678   speed [1x v]   camera [default v]
+//   distance  ====o=====  375           [x] see through objects
 //
 // How it drives the game (all through the host's Replay API):
 //   * the playhead is Replay::Time(), the game's own playback clock
@@ -10,6 +11,9 @@
 //     while paused or not at 1x this plugin keeps its own clock and seeks to it every frame. At 1x the game
 //     plays the replay itself.
 //   * Space toggles pause while a replay is on screen.
+//   * distance is how far the camera stays from the ball, in whole units (the game's own is 375), in the default
+//     and follow 3d cameras; see through objects turns anything between the camera and the ball to glass instead of
+//     letting the camera be pushed in. Both are saved.
 
 UI::Window@ window;
 UI::Button@ playButton;
@@ -17,6 +21,12 @@ UI::Slider@ slider;
 UI::Text@ timeText;
 UI::Dropdown@ speedBox;
 UI::Dropdown@ cameraBox;
+UI::Slider@ distanceSlider;
+UI::Text@ distanceText;
+UI::CheckBox@ seeThroughBox;
+
+const int MIN_DISTANCE = 150, MAX_DISTANCE = 1500;
+int distance = 375;                   // the replay camera's own arm length, measured
 
 const int NORMAL_SPEED = 3;           // index of 1x
 int speedIndex = NORMAL_SPEED;
@@ -64,6 +74,18 @@ string CameraLabel(int mode)
     return "default";
 }
 
+int Clamp(int d) { return d < MIN_DISTANCE ? MIN_DISTANCE : (d > MAX_DISTANCE ? MAX_DISTANCE : d); }
+
+// The distance and see-through as chosen, to the host and on screen.
+void ApplyCamera()
+{
+    Replay::SetCameraDistance(distance);
+    Replay::SetSeeThrough(seeThroughBox.checked);
+    distanceText.text = "" + distance;
+    if (!distanceSlider.dragging)
+        distanceSlider.value = float(distance - MIN_DISTANCE) / float(MAX_DISTANCE - MIN_DISTANCE);
+}
+
 double Min(double a, double b) { return a < b ? a : b; }
 double Max(double a, double b) { return a > b ? a : b; }
 
@@ -96,6 +118,17 @@ void Main()
     for (int mode = Replay::Default; mode <= Replay::Free; mode++)
         cameraBox.AddOption(CameraLabel(mode));
     cameraBox.selected = Replay::CameraMode();
+
+    window.NewRow();
+    window.AddText("distance", 16);
+    @distanceSlider = window.AddSlider(300);
+    @distanceText = window.AddText("", 16);
+    window.AddSpace(24);
+    @seeThroughBox = window.AddCheckBox("see through objects", 16);
+
+    distance = Clamp(int(parseInt(Storage::Get("distance", "375"))));
+    seeThroughBox.checked = Storage::Get("seeThrough", "false") == "true";
+    ApplyCamera();
     Log::Info("replay manager ready");
 }
 
@@ -169,6 +202,23 @@ void Update(float dt)
         Reanchor(time);
         speedIndex = speedBox.selected;
         Log::Info("speed " + SpeedLabel(speedIndex));
+    }
+    if (distanceSlider.dragging)
+    {
+        // Whole units only: the slider snaps to them.
+        int d = Clamp(int(MIN_DISTANCE + distanceSlider.value * (MAX_DISTANCE - MIN_DISTANCE) + 0.5f));
+        if (d != distance)
+        {
+            distance = d;
+            ApplyCamera();
+            Storage::Set("distance", "" + distance);
+        }
+    }
+    if (seeThroughBox.Changed())
+    {
+        ApplyCamera();
+        Storage::Set("seeThrough", seeThroughBox.checked ? "true" : "false");
+        Log::Info("see through objects " + (seeThroughBox.checked ? "on" : "off"));
     }
     if (cameraBox.Changed())
     {

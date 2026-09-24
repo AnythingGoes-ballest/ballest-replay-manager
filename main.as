@@ -1,7 +1,7 @@
 // Replay Manager: controls along the bottom of the screen while watching a replay.
 //
-//   [pause]  ====o=================  0:12.345 / 0:45.678   speed [1x v]   camera [default v]
-//   distance  ====o=====  375           [x] see through objects
+//   [pause]  ====o=================  0:12.345 / 0:45.678   speed [1x v]   camera [default v]   [v]
+//   distance  ====o=====  375           [x] see through objects        (shown with the arrow on the right)
 //
 // How it drives the game (all through the host's Replay API):
 //   * the playhead is Replay::Time(), the game's own playback clock
@@ -13,7 +13,7 @@
 //   * Space toggles pause while a replay is on screen.
 //   * distance is how far the camera stays from the ball, in whole units (the game's own is 375), in the default
 //     and follow 3d cameras; see through objects turns anything between the camera and the ball to glass instead of
-//     letting the camera be pushed in. Both are saved.
+//     letting the camera be pushed in. Both are saved, and so is whether that row is open.
 
 UI::Window@ window;
 UI::Button@ playButton;
@@ -24,6 +24,9 @@ UI::Dropdown@ cameraBox;
 UI::Slider@ distanceSlider;
 UI::Text@ distanceText;
 UI::CheckBox@ seeThroughBox;
+UI::Button@ moreButton;
+UI::Text@ distanceLabel;
+bool expanded = false;                // the camera options row is open
 
 const int MIN_DISTANCE = 150, MAX_DISTANCE = 1500;
 int distance = 375;                   // the replay camera's own arm length, measured
@@ -118,18 +121,30 @@ void Main()
     for (int mode = Replay::Default; mode <= Replay::Free; mode++)
         cameraBox.AddOption(CameraLabel(mode));
     cameraBox.selected = Replay::CameraMode();
+    @moreButton = window.AddIconButton("down");
 
     window.NewRow();
-    window.AddText("distance", 16);
+    @distanceLabel = window.AddText("distance", 16);
     @distanceSlider = window.AddSlider(300);
     @distanceText = window.AddText("", 16);
-    window.AddSpace(24);
     @seeThroughBox = window.AddCheckBox("see through objects", 16);
 
     distance = Clamp(int(parseInt(Storage::Get("distance", "375"))));
     seeThroughBox.checked = Storage::Get("seeThrough", "false") == "true";
+    expanded = Storage::Get("expanded", "false") == "true";
+    ShowMore();
     ApplyCamera();
     Log::Info("replay manager ready");
+}
+
+// The camera options row, opened and closed with the arrow at the end of the first row.
+void ShowMore()
+{
+    distanceLabel.visible = expanded;
+    distanceSlider.visible = expanded;
+    distanceText.visible = expanded;
+    seeThroughBox.visible = expanded;
+    moreButton.icon = expanded ? "up" : "down";
 }
 
 bool Driving() { return paused || speedIndex != NORMAL_SPEED; }
@@ -196,6 +211,12 @@ void Update(float dt)
         paused = !paused;
         playButton.icon = paused ? "play" : "pause";
         Log::Info(paused ? "paused" : "playing");
+    }
+    if (moreButton.Clicked())
+    {
+        expanded = !expanded;
+        ShowMore();
+        Storage::Set("expanded", expanded ? "true" : "false");
     }
     if (speedBox.Changed())
     {

@@ -1,9 +1,9 @@
 [meta]
 name = "Replay Manager"
-version = "0.2.0"
+version = "0.3.0"
 author = "AnythingGoes"
 description = "Pause, speed (.1x to 5x), scrubbing, default / follow 3D / free cameras, camera distance, and seeing through objects."
-min_host = "0.7.0"
+min_host = "0.9.0"
 
 [script]
 files = ["main.as"]

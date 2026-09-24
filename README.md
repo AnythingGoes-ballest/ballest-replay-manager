@@ -4,8 +4,8 @@ A plugin for the [Ballest plugin manager](https://github.com/AnythingGoes-balles
 controls for watching replays in Ballest of Them All.
 
 ```
-[pause]  ====o=================  0:12.345 / 0:45.678   speed [1x v]   camera [default v]
-distance  ====o=====  375           [x] see through objects
+[pause]  ====o=================  0:12.345 / 0:45.678   speed [1x v]   camera [default v]   [v]
+distance  ====o=====  375   [x] see through objects        (opened with the arrow on the right)
 ```
 
 - **The real length** of the replay from the start (the recorded duration), so the whole run can be scrubbed straight
@@ -15,6 +15,8 @@ distance  ====o=====  375           [x] see through objects
 - **Scrubbing**: drag the bar to any point.
 - **Cameras**: the game's default, follow 3D (a chase camera behind the ball along its direction of travel, turning
   smoothly), and a free camera (WASD, E/Q up and down, Shift faster, hold the right mouse button to look).
+- **The arrow** at the end of the bar opens a second row with the camera options below, and closes it again. Whether
+  it's open is saved.
 - **Distance**: how far the camera stays from the ball, 150 to 1500 units (the game's own is 375), for the default and
   follow 3D cameras. Saved.
 - **See through objects**: anything between the camera and the ball turns to glass while it's in the way, instead of
@@ -22,8 +24,8 @@ distance  ====o=====  375           [x] see through objects
 
 ## Install
 
-In the game: footer **plugins** > **open** > **browse** > Replay Manager > **install**. Needs the plugin manager
-host 0.7.0 or newer.
+In the game: footer **plugins** > **browse** > Replay Manager > **install**. Needs the plugin manager
+host 0.9.0 or newer.
 
 ## How it works
 
